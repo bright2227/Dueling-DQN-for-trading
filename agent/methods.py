@@ -67,9 +67,11 @@ def evaluate_model(agent, data, history ):
 def plot(data,history):
     result = data[['Adj Close','date']]
     result['sig']=np.nan
+    
     for log in history :
         result['sig'].iloc[log[1]]=log[0]
-        result = result.fillna(method='ffill')
+        
+    result = result.fillna(method='ffill')
 
     result.set_index('date')['Adj Close'].plot()
     result.set_index('date')['sig'].plot(secondary_y=True)
