@@ -22,4 +22,5 @@ Cautions
 
 
 Minor target
+
 1.Detail record method
