@@ -30,30 +30,24 @@ class Agent:
     def __init__(self, buffer_size, state_size, action_size=3, ):
         
         # agent config
-        self.buffer = MemoryBuffer(buffer_size, True)
-        
-        self.state_size = state_size    	# normalized previous days
-        self.action_size = action_size           		# [sit, buy, sell]
+        self.buffer = MemoryBuffer(buffer_size, True)        
+        self.state_size = state_size   
+        self.action_size = action_size           
         self.inventory = []
-        self.first_iter = True
-        self.last_iter = False
-        self.n_iter = 1
 
         # model config
         self.gamma = 0.95 # affinity for long term reward
         self.learning_rate = 0.001
         self.loss = huber_loss
         self.optimizer = Adam(lr=self.learning_rate)
-        # target network
-         
+        
+        # target network         
         self.model = self._model() 
         self.target_model = clone_model(self.model)         
         self.target_model.set_weights(self.model.get_weights())
 
 
     def _model(self):
-        """Creates the model
-        """
 
         inputs = Input(shape=self.state_size)
         x = Dense(64, activation='relu')(inputs)
@@ -66,46 +60,33 @@ class Agent:
         q = Add()([value, advantage])
 
         model = Model(inputs=inputs, outputs=q)
-
         model.compile(loss=self.loss, optimizer=self.optimizer)
         return model
+    
 
     def remember(self, state, action, reward, next_state, done):
-        """Adds relevant data to memory
-        """
+
         self.memory.append((state, action, reward, next_state, done))
+        
 
     def act(self, state, epsilon, is_eval=False):
-        """Take action from given possible set of actions
-        """
+        
         # take random action in order to diversify experience at the beginning
         if not is_eval and random.random() <= epsilon:
             return random.randrange(self.action_size)
-        
-        if self.last_iter:
-            self.last_iter = False
-            return self.action_size-1 # make a definite sell on the last iter        
-
-        if self.first_iter:
-            self.first_iter = False
-            if not is_eval:
-                return random.randrange(self.action_size) # make a definite buy on the first iter
-            else:
-                return 0
             
         state = state.reshape( (-1,)+ self.state_size )
         action_probs = self.model.predict(state)
         return np.argmax(action_probs[0])
     
+    
     def epsilon_decay(self, epsilon, epsilon_min, epsilon_decay):
         if epsilon > epsilon_min:
-            epsilon *= epsilon_decay
-            
+            epsilon *= epsilon_decay            
         return epsilon
     
+    
     def remember_sumtree(self, state, action, reward, new_state, done, ):
-        """ Store experience in memory buffer
-        """
         
         state = state.reshape( (-1,)+ self.state_size )
         new_state = new_state.reshape( (-1,)+ self.state_size )
@@ -117,6 +98,7 @@ class Agent:
         td_error = abs(new_val - q_val + 1e-8 )[0]        
 
         self.buffer.memorize(state, action, reward, done, new_state, td_error)
+        
         
     def target_model_update(self, done, tau=0.1, type='reset', reset_every=5000):
         
@@ -136,16 +118,12 @@ class Agent:
         
 
     def train_experience_replay_sumtree( self, batch_size,):
-        """ Train Q-network on batch sampled from the buffer
-        """
-        # Sample experience from memory buffer (optionally with PER)
         
         state, action, reward, done, new_state, idx = self.buffer.sample_batch(batch_size)
        
         state = state.reshape( (-1,)+ self.state_size )
         new_state = new_state.reshape( (-1,)+ self.state_size )
         
-        # Apply Bellman Equation on batch samples to train our DDQN
         q = self.model.predict(state)
 
         next_q = self.model.predict(new_state)
@@ -160,7 +138,6 @@ class Agent:
                 q[i, action[i]] = reward[i] + self.gamma * q_targ[i, next_best_action]
             self.buffer.update(idx[i], abs(old_q - q[i, action[i]]))
 
-        # Train on batch
         loss = self.model.fit((state), q, epochs=1, verbose=0).history["loss"][0]   
 
         return loss
@@ -172,6 +149,7 @@ class Agent:
             np.save('save/' + name + '/data.npy', self.buffer.buffer.data)
             np.save('save/' + name + '/tree.npy', self.buffer.buffer.tree)
             self.model.save('save/' + name +'/model.h5')
+            self.target_model.save('save/' + name +'/target_model.h5')
         else:
             print('already exist, please check.')
 
@@ -182,6 +160,7 @@ class Agent:
         else:
             self.buffer.buffer.data = np.load('save/' + name + '/data.npy',allow_pickle=True)
             self.buffer.buffer.tree = np.load('save/' + name + '/tree.npy',allow_pickle=True)
-            self.model=load_model('save/' + name +'/model.h5')
+            self.model = load_model('save/' + name +'/model.h5')
+            self.target_model = load_model('save/' + name +'/target_model.h5')
 
 
