@@ -11,7 +11,7 @@ network output Buy, Sell, Hold(do nothing)
 
 Assume all money can be divide by stock price. 
 
-If model acts Buy, exchanges all the money into stocks, opposite to 'Sell'.
+If model acts Buy, exchanges all the money into stocks, in contrast to 'Sell'.
 
 
 
@@ -21,8 +21,4 @@ Cautions
 
 test set (TW0050 2019) inflates through most of year, can't trust the performance on it
 
-Unsolved problems
 
-1.saving and loading model fails
-
-2.ploting costs too much time
