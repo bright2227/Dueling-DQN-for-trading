@@ -14,11 +14,12 @@ Assume all money can be divide by stock price.
 If model acts Buy, exchanges all the money into stocks, in contrast to 'Sell'.
 
 
-
 Cautions
 
-500 eposides to reach acceptable performance on train set (TW0050 2018)by evaluate_model. If you lower the buffer memory to half (20000), it takes 1500 eposides to reach acceptable performance.
+1.500 eposides to reach acceptable performance on train set (TW0050 2018)by evaluate_model. If you lower the buffer memory to half (20000), it takes 1500 eposides to reach acceptable performance.
 
-test set (TW0050 2019) inflates through most of year, can't trust the performance on it
+2.test set (TW0050 2019) inflates through most of year, can't trust the performance on it. It needs other validation method
 
 
+Minor target
+1.Detail record method
