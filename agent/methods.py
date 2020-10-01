@@ -5,14 +5,6 @@ import time
 import random
 from tqdm import tqdm_notebook
 
-def get_state(data, t, state_sup):
-    """Returns an n-day state representation ending at time t
-    """
-    res = data.loc[t].tolist()[1:-2] #avoid open,close and date
-    res.extend(state_sup)
-    
-    return np.array([res])
-
 
 def training_evaluate(agent, env, ):
     

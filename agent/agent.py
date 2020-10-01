@@ -3,10 +3,8 @@ import numpy as np
 import tensorflow as tf
 import keras.backend as K
 import os
-from keras.models import Sequential
-from keras.models import load_model, clone_model
+from keras.models import Sequential, load_model, clone_model, Model
 from keras.layers import Input, Dense, Add, Subtract, Lambda,LSTM
-from keras.models import Model
 from keras.optimizers import Adam
 from utils.memory_buffer import MemoryBuffer
 
@@ -27,7 +25,7 @@ def huber_loss(y_true, y_pred, clip_delta=1.0):
 class Agent:
     """ Stock Trading Bot """
 
-    def __init__(self, buffer_size, state_size, action_size=3, ):
+    def __init__(self, buffer_size, state_size, action_size=3, learning_rate = 0.001 ):
         
         # agent config
         self.buffer = MemoryBuffer(buffer_size, True)        
@@ -37,9 +35,8 @@ class Agent:
 
         # model config
         self.gamma = 0.95 # affinity for long term reward
-        self.learning_rate = 0.001
         self.loss = huber_loss
-        self.optimizer = Adam(lr=self.learning_rate)
+        self.optimizer = Adam(lr= learning_rate)
         
         # target network         
         self.model = self._model() 
